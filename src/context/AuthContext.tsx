@@ -8,12 +8,18 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { auth } from '../services/firebase';
+import { createUserProfile, findUserByUsername } from '../services/usersService';
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, displayName?: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    displayName: string,
+    username: string
+  ) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -32,15 +38,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (identifier: string, password: string) => {
+    let email = identifier.trim();
+
+    if (!identifier.includes('@')) {
+      const profile = await findUserByUsername(identifier);
+      if (!profile) {
+        throw new Error('No encontramos un usuario con ese nombre.');
+      }
+      email = profile.email;
+    }
+
     await signInWithEmailAndPassword(auth, email, password);
   };
 
-  const register = async (email: string, password: string, displayName?: string) => {
-    const credential = await createUserWithEmailAndPassword(auth, email, password);
-    if (displayName) {
-      await updateProfile(credential.user, { displayName });
+  const register = async (
+    email: string,
+    password: string,
+    displayName: string,
+    username: string
+  ) => {
+    const cleanUsername = username.trim();
+    if (!cleanUsername) {
+      throw new Error('El nombre de usuario es obligatorio.');
     }
+
+    const existing = await findUserByUsername(cleanUsername);
+    if (existing) {
+      throw new Error('Ese nombre de usuario ya está en uso.');
+    }
+
+    const credential = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(credential.user, { displayName });
+
+    await createUserProfile({
+      uid: credential.user.uid,
+      email,
+      displayName,
+      username: cleanUsername,
+    });
   };
 
   const logout = async () => {
