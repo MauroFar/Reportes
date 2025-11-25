@@ -27,15 +27,13 @@ export default function ReportesPage() {
   );
 
   const handleAdd = () => {
-    const defaultDate = selectedMonth
-      ? `${selectedMonth}-01`
-      : new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     setFormData({
-      fecha: defaultDate,
+      fecha: today,
       descripcion: '',
       observaciones: '',
       lugarCompra: '',
-      valor: 0,
+      valor: '' as any,
     });
     setEditingId(null);
     setIsModalOpen(true);
@@ -116,7 +114,7 @@ export default function ReportesPage() {
       descripcion: '',
       observaciones: '',
       lugarCompra: '',
-      valor: 0,
+      valor: '' as any,
     });
   };
 
@@ -210,11 +208,9 @@ export default function ReportesPage() {
           cursorY = 20;
         }
 
-        pdf.text(
-          `${index + 1}. ${new Date(reporte.fecha).toLocaleDateString('es-ES')} - ${reporte.descripcion}`,
-          20,
-          cursorY
-        );
+        pdf.text(`Fecha: ${new Date(reporte.fecha).toLocaleDateString('es-ES')}`, 20, cursorY);
+        cursorY += lineHeight;
+        pdf.text(`Descripción: ${reporte.descripcion}`, 20, cursorY);
         cursorY += lineHeight;
         pdf.text(`Lugar: ${reporte.lugarCompra}`, 20, cursorY);
         cursorY += lineHeight;
@@ -233,7 +229,7 @@ export default function ReportesPage() {
         cursorY += lineHeight + 4;
       });
 
-      cursorY += 6;
+      cursorY += 20;
       if (cursorY > 270) {
         pdf.addPage();
         cursorY = 20;
@@ -292,15 +288,7 @@ export default function ReportesPage() {
                 })}
               </span>
             </div>
-            <div className="flex flex-col justify-center bg-indigo-50 rounded-lg p-3">
-              <span className="text-xs text-indigo-700 uppercase tracking-wide">Total general</span>
-              <span className="text-xl font-bold text-indigo-900">
-                ${totalGeneral.toLocaleString('es-ES', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </span>
-            </div>
+         
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
