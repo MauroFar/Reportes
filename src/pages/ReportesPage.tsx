@@ -140,10 +140,7 @@ export default function ReportesPage() {
     [reportesDelMes]
   );
 
-  const totalGeneral = useMemo(
-    () => reportes.reduce((sum, r) => sum + r.valor, 0),
-    [reportes]
-  );
+ 
 
   const handleDownload = (reporte: Reporte) => {
     try {
@@ -202,7 +199,7 @@ export default function ReportesPage() {
       let cursorY = 35;
       const lineHeight = 8;
 
-      reportesDelMes.forEach((reporte, index) => {
+      reportesDelMes.forEach((reporte) => {
         if (cursorY > 270) {
           pdf.addPage();
           cursorY = 20;
